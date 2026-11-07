@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Nightwave — Music Player</title>
+<meta name="description" content="Nightwave — a premium Spotify-inspired web music player with vinyl visualizer, playlist, shuffle, repeat, and keyboard controls.">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='48' fill='%230B0B0F'/%3E%3Ccircle cx='50' cy='50' r='20' fill='%2300E676'/%3E%3Ccircle cx='50' cy='50' r='4' fill='%230B0B0F'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="Musicplayer.css">
+</head>
+<body>
+
+<!-- Blurred, crossfading album-art backdrop -->
+<div class="backdrop" aria-hidden="true">
+  <div class="backdrop-layer" id="backdropA"></div>
+  <div class="backdrop-layer" id="backdropB"></div>
+  <div class="backdrop-scrim"></div>
+</div>
+
+<div class="app">
+
+  <!-- ============ TOP BAR ============ -->
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="3.2" fill="currentColor"/></svg>
+      </span>
+      <span class="brand-name">Nightwave</span>
+    </div>
+
+    <div class="topbar-now" id="topbarNow">
+      <span class="on-air" id="onAir"><span class="dot"></span><span id="onAirLabel">Standby</span></span>
+      <span class="topbar-title" id="topbarTitle">Nothing playing</span>
+    </div>
+
+    <div class="topbar-actions">
+      <div class="search-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="search" placeholder="Search songs..." aria-label="Search songs by title">
+      </div>
+      <button class="icon-btn" id="settingsBtn" aria-label="Settings" aria-haspopup="true" aria-expanded="false" title="Settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
+    </div>
+
+    <div class="settings-menu" id="settingsMenu" hidden>
+      <label class="settings-row">
+        <span>Autoplay next</span>
+        <span class="switch-wrap">
+          <input type="checkbox" id="autoplay" checked>
+          <span class="switch"></span>
+        </span>
+      </label>
+      <div class="settings-row">
+        <span>Reduce motion follows OS setting</span>
+      </div>
+      <p class="settings-hint">Space play/pause &nbsp;·&nbsp; ←/→ seek &nbsp;·&nbsp; ↑/↓ volume<br>N/P next/previous &nbsp;·&nbsp; S shuffle &nbsp;·&nbsp; R repeat</p>
+    </div>
+  </header>
+
+  <!-- ============ MAIN CONSOLE ============ -->
+  <main class="console">
+
+    <!-- Left: vinyl -->
+    <section class="stage" aria-label="Now playing visual">
+      <div class="platter-wrap">
+        <div class="glow-ring" id="glowRing" aria-hidden="true"></div>
+        <div class="platter" id="platter">
+          <div class="label">
+            <img id="albumArt" src="images/album.png" alt="" draggable="false">
+          </div>
+        </div>
+        <div class="tonearm" id="tonearm">
+          <svg viewBox="0 0 70 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="62" cy="14" r="7" fill="#2a2a30" stroke="#4a4a52" stroke-width="1.5"/>
+            <line x1="60" y1="16" x2="14" y2="62" stroke="#8b8b93" stroke-width="3" stroke-linecap="round"/>
+            <path d="M14 62 L4 68 L10 76 L22 68 Z" fill="#00E676"/>
+          </svg>
+        </div>
+      </div>
+      <div class="visualizer" id="visualizer" aria-hidden="true">
+        <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+      </div>
+    </section>
+
+    <!-- Middle: info + controls -->
+    <section class="now-playing" aria-label="Playback controls">
+      <div class="track-eyebrow">
+        <span id="trackIndex">Track 01 / 05</span>
+        <span id="statusFlag" class="status-flag" hidden>Can't load this track</span>
+      </div>
+      <h1 class="track-title" id="trackTitle">—</h1>
+      <p class="track-artist" id="trackArtist">—</p>
+
+      <div class="progress-row">
+        <span class="time" id="timeCurrent">0:00</span>
+        <input type="range" id="progress" min="0" max="100" value="0" step="0.1" aria-label="Seek">
+        <span class="time now" id="timeDuration">0:00</span>
+      </div>
+
+      <div class="transport">
+        <button class="btn ghost" id="shuffleBtn" aria-label="Shuffle" aria-pressed="false" title="Shuffle">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5"/><path d="M4 20L21 3"/><path d="M21 16v5h-5"/><path d="M15 15l6 6"/><path d="M4 4l5 5"/></svg>
+        </button>
+        <button class="btn" id="prevBtn" aria-label="Previous track">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zM20 6v12L10 12z"/></svg>
+        </button>
+        <button class="btn play" id="playBtn" aria-label="Play">
+          <svg id="playIcon" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+        </button>
+        <button class="btn" id="nextBtn" aria-label="Next track">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 6h2v12h-2zM4 6v12l10-6z"/></svg>
+        </button>
+        <button class="btn ghost" id="repeatBtn" aria-label="Repeat off" title="Repeat">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+          <span class="repeat-one-dot" id="repeatOneDot" hidden>1</span>
+        </button>
+      </div>
+
+      <div class="volume-row">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3a4.5 4.5 0 0 0-2.5-4.03v8.06A4.5 4.5 0 0 0 16.5 12z"/></svg>
+        <input type="range" id="volume" min="0" max="1" step="0.01" value="0.8" aria-label="Volume">
+      </div>
+    </section>
+  </main>
+
+  <!-- ============ PLAYLIST ============ -->
+  <section class="playlist-section" aria-label="Playlist">
+    <div class="playlist-head">
+      <h2>Playlist</h2>
+      <span class="playlist-count" id="playlistCount"></span>
+    </div>
+    <div class="playlist" id="playlist"></div>
+  </section>
+
+</div>
+
+<audio id="audio" preload="metadata"></audio>
+
+<script src="Musicplayer.js" defer></script>
+</body>
+</html>
